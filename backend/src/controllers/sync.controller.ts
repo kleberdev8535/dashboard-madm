@@ -98,8 +98,16 @@ export async function syncFromSheets(req: AuthRequest, res: Response, next: Next
       const negocios = expandirRegistros(linha, consultor.id);
 
       for (const neg of negocios) {
+        // clienteId é obrigatório — cria cliente placeholder para registros de sync
+        const clientePlaceholder = await prisma.cliente.upsert({
+          where: { kommoId: `sync-${consultor.id}` },
+          update: {},
+          create: { nome: nome, kommoId: `sync-${consultor.id}` },
+        });
+
         await prisma.negocio.create({
           data: {
+            clienteId:   clientePlaceholder.id,
             status:      neg.status,
             consultorId: consultor.id,
             equipeId,

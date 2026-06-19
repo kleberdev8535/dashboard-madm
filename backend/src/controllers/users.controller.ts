@@ -10,7 +10,10 @@ export async function listUsers(req: AuthRequest, res: Response, next: NextFunct
     const skip = (Number(page) - 1) * Number(limit);
 
     const where: any = { active: true };
-    if (search) where.OR = [{ name: { contains: String(search), mode: 'insensitive' } }, { email: { contains: String(search), mode: 'insensitive' } }];
+    if (search) where.OR = [
+      { name: { contains: String(search) } },
+      { email: { contains: String(search) } },
+    ];
     if (role) where.role = role;
     if (equipeId) where.equipeId = equipeId;
     if (unidadeId) where.unidadeId = unidadeId;
@@ -21,8 +24,17 @@ export async function listUsers(req: AuthRequest, res: Response, next: NextFunct
         skip,
         take: Number(limit),
         orderBy: { name: 'asc' },
-        include: { equipe: { select: { nome: true } }, unidade: { select: { nome: true } } },
-        select: { id: true, name: true, email: true, role: true, avatar: true, active: true, createdAt: true, equipe: { select: { nome: true } }, unidade: { select: { nome: true } } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatar: true,
+          active: true,
+          createdAt: true,
+          equipe: { select: { nome: true } },
+          unidade: { select: { nome: true } },
+        },
       }),
       prisma.user.count({ where }),
     ]);
@@ -52,8 +64,13 @@ export async function updateUser(req: AuthRequest, res: Response, next: NextFunc
     const { name, role, equipeId, unidadeId, active } = req.body;
     const user = await prisma.user.update({
       where: { id },
-      data: { name, role: role, equipeId, unidadeId, active },
-      omit: { password: true },
+      data: { name, role, equipeId, unidadeId, active },
+      select: {
+        id: true, name: true, email: true, role: true,
+        avatar: true, active: true, createdAt: true,
+        equipe: { select: { nome: true } },
+        unidade: { select: { nome: true } },
+      },
     });
     res.json(user);
   } catch (err) { next(err); }

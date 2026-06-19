@@ -2,43 +2,38 @@ import { Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../middlewares/error.middleware';
 import { AuthRequest } from '../middlewares/auth.middleware';
-const StatusNegocio: Record<string, string> = {
-  LEAD: 'LEAD', PRIMEIRO_CONTATO: 'PRIMEIRO_CONTATO', EM_CONTATO: 'EM_CONTATO',
-  SEM_RETORNO: 'SEM_RETORNO', COLETA_DOCUMENTACAO: 'COLETA_DOCUMENTACAO',
-  PENDENCIAS: 'PENDENCIAS', AGUARDANDO_EMISSAO: 'AGUARDANDO_EMISSAO',
-  EMITIDO: 'EMITIDO', ASSINADO: 'ASSINADO', AUDITORIA: 'AUDITORIA',
-  FINALIZADO: 'FINALIZADO', CANCELADO: 'CANCELADO', PRO: 'PRO', SANADA: 'SANADA', RESET: 'RESET',
-};
 import * as XLSX from 'xlsx';
 import { parse } from 'csv-parse/sync';
 import path from 'path';
 import fs from 'fs';
 import { logger } from '../utils/logger';
 
-const STATUS_MAP: Record<string, StatusNegocio> = {
-  'lead': StatusNegocio.LEAD,
-  'primeiro contato': StatusNegocio.PRIMEIRO_CONTATO,
-  'em contato': StatusNegocio.EM_CONTATO,
-  'sem retorno': StatusNegocio.SEM_RETORNO,
-  'coleta': StatusNegocio.COLETA_DOCUMENTACAO,
-  'documentação': StatusNegocio.COLETA_DOCUMENTACAO,
-  'pendências': StatusNegocio.PENDENCIAS,
-  'pendencias': StatusNegocio.PENDENCIAS,
-  'aguardando emissão': StatusNegocio.AGUARDANDO_EMISSAO,
-  'aguardando emissao': StatusNegocio.AGUARDANDO_EMISSAO,
-  'emitido': StatusNegocio.EMITIDO,
-  'assinado': StatusNegocio.ASSINADO,
-  'auditoria': StatusNegocio.AUDITORIA,
-  'finalizado': StatusNegocio.FINALIZADO,
-  'cancelado': StatusNegocio.CANCELADO,
-  'pro': StatusNegocio.PRO,
-  'sanada': StatusNegocio.SANADA,
-  'reset': StatusNegocio.RESET,
+type TipoImport = 'CSV' | 'XLSX';
+
+const STATUS_MAP: Record<string, string> = {
+  'lead': 'LEAD',
+  'primeiro contato': 'PRIMEIRO_CONTATO',
+  'em contato': 'EM_CONTATO',
+  'sem retorno': 'SEM_RETORNO',
+  'coleta': 'COLETA_DOCUMENTACAO',
+  'documentação': 'COLETA_DOCUMENTACAO',
+  'pendências': 'PENDENCIAS',
+  'pendencias': 'PENDENCIAS',
+  'aguardando emissão': 'AGUARDANDO_EMISSAO',
+  'aguardando emissao': 'AGUARDANDO_EMISSAO',
+  'emitido': 'EMITIDO',
+  'assinado': 'ASSINADO',
+  'auditoria': 'AUDITORIA',
+  'finalizado': 'FINALIZADO',
+  'cancelado': 'CANCELADO',
+  'pro': 'PRO',
+  'sanada': 'SANADA',
+  'reset': 'RESET',
 };
 
-function parseStatus(value: string): StatusNegocio {
+function parseStatus(value: string): string {
   const normalized = value?.toLowerCase().trim();
-  return STATUS_MAP[normalized] || StatusNegocio.LEAD;
+  return STATUS_MAP[normalized] || 'LEAD';
 }
 
 export async function uploadImport(req: AuthRequest, res: Response, next: NextFunction) {
@@ -46,7 +41,7 @@ export async function uploadImport(req: AuthRequest, res: Response, next: NextFu
     if (!req.file) throw new AppError('Arquivo não enviado', 400);
 
     const ext = path.extname(req.file.originalname).toLowerCase();
-    const tipo = ext === '.csv' ? 'CSV' : 'XLSX';
+    const tipo: TipoImport = ext === '.csv' ? 'CSV' : 'XLSX';
 
     const importRecord = await prisma.import.create({
       data: {
@@ -107,7 +102,7 @@ async function processImport(importId: string, filePath: string, tipo: TipoImpor
   } catch (err: any) {
     await prisma.import.update({
       where: { id: importId },
-      data: { status: 'ERRO', errorLog: { message: 'Erro ao ler arquivo: ' + err.message } },
+      data: { status: 'ERRO', errorLog: JSON.stringify({ message: 'Erro ao ler arquivo: ' + err.message }) },
     });
     return;
   }
@@ -122,7 +117,9 @@ async function processImport(importId: string, filePath: string, tipo: TipoImpor
       const nome = row['Nome'] || row['nome'] || row['NOME'] || row['Cliente'] || '';
       if (!nome) { erros++; errorLog.push({ linha: i + 2, erro: 'Nome obrigatório' }); continue; }
 
-      let cliente = await prisma.cliente.findFirst({ where: { nome: { equals: nome, mode: 'insensitive' } } });
+      let cliente = await prisma.cliente.findFirst({
+        where: { nome: { equals: nome } },
+      });
       if (!cliente) {
         cliente = await prisma.cliente.create({
           data: {
@@ -161,7 +158,7 @@ async function processImport(importId: string, filePath: string, tipo: TipoImpor
       totalLinhas: rows.length,
       processadas,
       erros,
-      errorLog: errorLog.length > 0 ? errorLog : undefined,
+      errorLog: errorLog.length > 0 ? JSON.stringify(errorLog) : null,
     },
   });
 
