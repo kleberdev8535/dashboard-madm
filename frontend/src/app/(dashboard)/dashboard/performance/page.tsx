@@ -85,8 +85,7 @@ export default function PerformancePage() {
         </div>
         <button onClick={() => refetch()}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs transition-colors"
-          style={{ color: 'var(--text-secondary)' }}
-          style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+          style={{ color: 'var(--text-secondary)', background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
           <RefreshCw size={12} /> Atualizar
         </button>
       </motion.div>
