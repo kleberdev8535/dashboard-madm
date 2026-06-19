@@ -3,9 +3,9 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'Corporate Insights Platform',
+  title: 'MADM Dashboard',
   description: 'Plataforma corporativa de indicadores operacionais e comerciais',
-  icons: { icon: '/favicon.ico' },
+  icons: { icon: '/favicon.jpeg' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
