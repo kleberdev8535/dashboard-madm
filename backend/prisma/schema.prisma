@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  password   String
+  role       String   @default("USUARIO")
+  avatar     String?
+  active     Boolean  @default(true)
+  equipeId   String?
+  unidadeId  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  equipe     Equipe?  @relation(fields: [equipeId], references: [id])
+  unidade    Unidade? @relation(fields: [unidadeId], references: [id])
+  imports    Import[]
+  logs       Log[]
+  negocios   Negocio[]
+
+  @@map("users")
+}
+
+model Unidade {
+  id        String   @id @default(uuid())
+  nome      String   @unique
+  cidade    String?
+  estado    String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  equipes   Equipe[]
+  negocios  Negocio[]
+
+  @@map("unidades")
+}
+
+model Equipe {
+  id        String   @id @default(uuid())
+  nome      String
+  tipo      String?
+  unidadeId String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  unidade   Unidade?  @relation(fields: [unidadeId], references: [id])
+  users     User[]
+  negocios  Negocio[]
+
+  @@map("equipes")
+}
+
+model Advogado {
+  id        String   @id @default(uuid())
+  nome      String
+  oab       String?
+  email     String?
+  telefone  String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  negocios  Negocio[]
+
+  @@map("advogados")
+}
+
+model Cliente {
+  id        String    @id @default(uuid())
+  kommoId   String?   @unique
+  nome      String
+  email     String?
+  telefone  String?
+  cpf       String?
+  rg        String?
+  dataNasc  DateTime?
+  endereco  String?
+  cidade    String?
+  estado    String?
+  cep       String?
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  negocios  Negocio[]
+
+  @@index([nome])
+  @@map("clientes")
+}
+
+model Negocio {
+  id                  String    @id @default(uuid())
+  kommoId             String?   @unique
+  titulo              String?
+  status              String    @default("LEAD")
+  valor               Float?
+  clienteId           String
+  consultorId         String?
+  advogadoId          String?
+  equipeId            String?
+  unidadeId           String?
+  dataEntrada         DateTime?
+  dataPrimeiroContato DateTime?
+  dataEmissao         DateTime?
+  dataAssinatura      DateTime?
+  dataFinalizado      DateTime?
+  observacoes         String?
+  tags                String?
+  pipeline            String?
+  etapa               String?
+  origem              String?
+  importId            String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  cliente    Cliente        @relation(fields: [clienteId], references: [id])
+  consultor  User?          @relation(fields: [consultorId], references: [id])
+  advogado   Advogado?      @relation(fields: [advogadoId], references: [id])
+  equipe     Equipe?        @relation(fields: [equipeId], references: [id])
+  unidade    Unidade?       @relation(fields: [unidadeId], references: [id])
+  historico  HistoricoEtapa[]
+  import     Import?        @relation(fields: [importId], references: [id])
+
+  @@index([status])
+  @@index([consultorId])
+  @@index([equipeId])
+  @@index([unidadeId])
+  @@map("negocios")
+}
+
+model HistoricoEtapa {
+  id           String   @id @default(uuid())
+  negocioId    String
+  statusAntes  String?
+  statusDepois String
+  userId       String?
+  observacao   String?
+  dataEtapa    DateTime @default(now())
+  tempoNaEtapa Int?
+
+  negocio      Negocio  @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+
+  @@index([negocioId])
+  @@map("historico_etapas")
+}
+
+model Import {
+  id           String   @id @default(uuid())
+  filename     String
+  originalName String
+  tipo         String
+  status       String   @default("PENDENTE")
+  totalLinhas  Int      @default(0)
+  processadas  Int      @default(0)
+  erros        Int      @default(0)
+  userId       String
+  errorLog     String?
+  mapeamento   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id])
+  negocios     Negocio[]
+
+  @@map("imports")
+}
+
+model DashboardCache {
+  id        String   @id @default(uuid())
+  chave     String   @unique
+  dados     String
+  expiraEm  DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("dashboards_cache")
+}
+
+model Log {
+  id        String   @id @default(uuid())
+  userId    String?
+  acao      String
+  recurso   String?
+  detalhes  String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("logs")
+}
