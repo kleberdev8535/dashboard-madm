@@ -4,13 +4,15 @@ import { AppError } from '../middlewares/error.middleware';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+function getTransporter() {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
+}
 
 function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -41,8 +43,10 @@ export async function forgotPassword(req: Request, res: Response, next: NextFunc
       data: { email: email.toLowerCase(), code, expiresAt },
     });
 
-    await transporter.sendMail({
-      from: `"MADM Dashboard" <${process.env.GMAIL_USER}>`,
+    console.log('[email] Enviando para:', email, '| user:', process.env.GMAIL_USER, '| pass definida:', !!process.env.GMAIL_APP_PASSWORD);
+    try {
+      await getTransporter().sendMail({
+        from: `"MADM Dashboard" <${process.env.GMAIL_USER}>`,
       to: email,
       subject: 'Código de recuperação de senha — MADM',
       html: `
@@ -73,7 +77,12 @@ export async function forgotPassword(req: Request, res: Response, next: NextFunc
           </p>
         </div>
       `,
-    });
+      });
+      console.log('[email] Enviado com sucesso para:', email);
+    } catch (emailErr: any) {
+      console.error('[email] ERRO ao enviar:', emailErr?.message, emailErr?.code, emailErr?.response);
+      throw new AppError('Erro ao enviar email: ' + emailErr?.message, 500);
+    }
 
     res.json({ message: 'Se o e-mail estiver cadastrado, você receberá um código.' });
   } catch (err) { next(err); }
