@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import axios from 'axios';
 
 async function sendEmail(to: string, toName: string, code: string) {
-  console.log('[brevo] BREVO_API_KEY definida:', !!process.env.BREVO_API_KEY, '| primeiros chars:', process.env.BREVO_API_KEY?.slice(0, 10));
+  console.log('[brevo] EMAIL_API_KEY definida:', !!process.env.EMAIL_API_KEY, '| primeiros chars:', process.env.EMAIL_API_KEY?.slice(0, 10));
   const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
     sender: { name: 'MADM Dashboard', email: 'kleber.madm@gmail.com' },
     to: [{ email: to, name: toName }],
@@ -40,7 +40,7 @@ async function sendEmail(to: string, toName: string, code: string) {
     `,
   }, {
     headers: {
-      'api-key': process.env.BREVO_API_KEY,
+      'api-key': process.env.EMAIL_API_KEY,
       'Content-Type': 'application/json',
     },
   });
