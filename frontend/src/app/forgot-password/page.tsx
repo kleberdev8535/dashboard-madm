@@ -121,9 +121,12 @@ export default function ForgotPasswordPage() {
                   <Mail size={26} style={{ color: '#22c55e' }} />
                 </div>
                 <h1 className="text-xl font-black text-center mb-1" style={{ color: '#e8edea' }}>Esqueceu sua senha?</h1>
-                <p className="text-sm text-center mb-6" style={{ color: '#8a9a90' }}>
-                  Digite seu e-mail e enviaremos um código de 6 dígitos
+                <p className="text-sm text-center mb-3" style={{ color: '#8a9a90' }}>
+                  Digite seu e-mail e solicite o código de recuperação.
                 </p>
+                <div className="rounded-xl px-4 py-3 mb-4 text-center text-sm" style={{ background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.18)', color: '#8a9a90' }}>
+                  📩 O código será encaminhado pelo <strong style={{ color: '#e8edea' }}>administrador</strong> — entre em contato com o admin para recebê-lo.
+                </div>
                 <form onSubmit={handleSendCode} className="space-y-4">
                   <input
                     type="email" placeholder="seu@email.com" value={email}
