@@ -2,9 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../middlewares/error.middleware';
 import bcrypt from 'bcryptjs';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
 
 function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -35,8 +41,8 @@ export async function forgotPassword(req: Request, res: Response, next: NextFunc
       data: { email: email.toLowerCase(), code, expiresAt },
     });
 
-    await resend.emails.send({
-      from: 'MADM Dashboard <onboarding@resend.dev>',
+    await transporter.sendMail({
+      from: `"MADM Dashboard" <${process.env.GMAIL_USER}>`,
       to: email,
       subject: 'Código de recuperação de senha — MADM',
       html: `
