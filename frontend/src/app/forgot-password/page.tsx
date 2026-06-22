@@ -17,6 +17,29 @@ export default function ForgotPasswordPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirm, setConfirm]   = useState('');
   const [showPw, setShowPw]     = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  function startCooldown() {
+    setResendCooldown(60);
+    const interval = setInterval(() => {
+      setResendCooldown(prev => {
+        if (prev <= 1) { clearInterval(interval); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+
+  async function handleResend() {
+    if (resendCooldown > 0) return;
+    setLoading(true);
+    try {
+      await api.post('/auth/forgot-password', { email });
+      toast.success('Novo código enviado!');
+      startCooldown();
+    } catch {
+      toast.error('Erro ao reenviar código');
+    } finally { setLoading(false); }
+  }
 
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
@@ -25,6 +48,7 @@ export default function ForgotPasswordPage() {
     try {
       await api.post('/auth/forgot-password', { email });
       setStep('code');
+      startCooldown();
       toast.success('Código enviado! Verifique seu e-mail.');
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Erro ao enviar código');
@@ -146,6 +170,11 @@ export default function ForgotPasswordPage() {
                     style={{ background: 'linear-gradient(135deg, #15803d, #22c55e)', boxShadow: '0 4px 20px rgba(34,197,94,0.3)' }}>
                     {loading ? <><Loader2 size={15} className="animate-spin" /> Verificando...</> : <>Verificar código <ArrowRight size={15} /></>}
                   </motion.button>
+                  <button type="button" onClick={handleResend} disabled={loading || resendCooldown > 0}
+                    className="w-full text-sm flex items-center justify-center gap-1.5 py-2 transition-colors disabled:opacity-50"
+                    style={{ color: resendCooldown > 0 ? '#4a5650' : '#22c55e' }}>
+                    {resendCooldown > 0 ? `Reenviar código em ${resendCooldown}s` : 'Não recebi — reenviar código'}
+                  </button>
                   <button type="button" onClick={() => setStep('email')}
                     className="w-full text-sm flex items-center justify-center gap-1.5 py-2 transition-colors"
                     style={{ color: '#4a5650' }}
