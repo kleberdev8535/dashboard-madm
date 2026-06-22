@@ -5,12 +5,11 @@ import bcrypt from 'bcryptjs';
 import axios from 'axios';
 
 async function sendEmail(to: string, toName: string, code: string) {
-  console.log('[brevo] EMAIL_API_KEY definida:', !!process.env.EMAIL_API_KEY, '| primeiros chars:', process.env.EMAIL_API_KEY?.slice(0, 10));
-  const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
-    sender: { name: 'MADM Dashboard', email: 'kleber.madm@gmail.com' },
-    to: [{ email: to, name: toName }],
-    subject: 'Código de recuperação de senha — MADM',
-    htmlContent: `
+  const response = await axios.post('https://api.resend.com/emails', {
+    from: 'onboarding@resend.dev',
+    to: ['kleber.madm@gmail.com'],
+    subject: `Código de recuperação de senha — MADM (para: ${to})`,
+    html: `
       <div style="font-family: Inter, sans-serif; max-width: 480px; margin: 0 auto; background: #0a0c0b; border-radius: 16px; padding: 40px; color: #e8edea;">
         <div style="text-align: center; margin-bottom: 32px;">
           <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: #14532d; border-radius: 50%; margin-bottom: 16px;">
@@ -40,11 +39,11 @@ async function sendEmail(to: string, toName: string, code: string) {
     `,
   }, {
     headers: {
-      'api-key': process.env.EMAIL_API_KEY,
+      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
       'Content-Type': 'application/json',
     },
   });
-  console.log('[brevo] resposta status:', response.status, '| data:', JSON.stringify(response.data));
+  console.log('[resend] status:', response.status, '| data:', JSON.stringify(response.data));
 }
 
 function generateCode(): string {
