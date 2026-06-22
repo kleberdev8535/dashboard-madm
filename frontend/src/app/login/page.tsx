@@ -409,7 +409,7 @@ export default function LoginPage() {
                       {remember ? <CheckSquare size={15} className="text-blue-600"/> : <Square size={15} className="text-gray-400"/>}
                       Lembrar-me
                     </button>
-                    <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">Esqueci minha senha</a>
+                    <a href="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">Esqueci minha senha</a>
                   </div>
                 </>
               )}

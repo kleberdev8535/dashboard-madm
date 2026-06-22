@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authMiddleware, requireRole } from '../middlewares/auth.middleware';
 import { login, me, changePassword, register } from '../controllers/auth.controller';
+import { forgotPassword, verifyCode, resetPassword } from '../controllers/password-reset.controller';
 import { listUsers, createUser, updateUser, deleteUser } from '../controllers/users.controller';
 import { getDashboardGeral, getDashboardComercial, getDashboardBackoffice, getDashboardRibeiraoPreto } from '../controllers/dashboard.controller';
 import { uploadImport, getImportStatus, listImports } from '../controllers/import.controller';
@@ -38,6 +39,9 @@ router.post('/auth/login', login);
 router.post('/auth/register', register);
 router.get('/auth/me', authMiddleware, me);
 router.put('/auth/change-password', authMiddleware, changePassword);
+router.post('/auth/forgot-password', forgotPassword);
+router.post('/auth/verify-code', verifyCode);
+router.post('/auth/reset-password', resetPassword);
 
 // Users
 router.get('/users', authMiddleware, requireRole('ADMIN', 'COORDENADOR', 'SUPERVISOR'), listUsers);

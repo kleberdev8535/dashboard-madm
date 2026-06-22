@@ -187,6 +187,18 @@ model DashboardCache {
   @@map("dashboards_cache")
 }
 
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("password_reset_tokens")
+}
+
 model Log {
   id        String   @id @default(uuid())
   userId    String?
