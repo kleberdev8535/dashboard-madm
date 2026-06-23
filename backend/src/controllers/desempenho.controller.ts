@@ -47,7 +47,7 @@ export async function getDesempenhoIndividual(req: AuthRequest, res: Response, n
           prisma.negocio.count({ where: { ...filtroConsultor, status: 'CANCELADO' } }),
         ]);
 
-        const taxa = registros > 0 ? Math.round((concluidos / registros) * 100) : 0;
+        const taxa = registros > 0 ? Math.round(((concluidos + auditoria) / registros) * 100) : 0;
 
         return {
           id: user?.id,
