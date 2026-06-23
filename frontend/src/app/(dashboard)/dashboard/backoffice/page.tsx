@@ -55,7 +55,7 @@ function AnalystCard({ name, rows, index }: { name: string; rows: Row[]; index: 
   const sanada      = count(rows, 'Sanada');
   const reset       = count(rows, 'Reset');
 
-  const taxa = total > 0 ? (finalizados / total) * 100 : 0;
+  const taxa = total > 0 ? ((finalizados + auditoria) / total) * 100 : 0;
   const taxaColor = taxa >= 30 ? '#16a34a' : taxa >= 15 ? '#d97706' : '#dc2626';
   const taxaBg    = `${taxaColor}1f`;
 
@@ -98,7 +98,7 @@ function AnalystCard({ name, rows, index }: { name: string; rows: Row[]; index: 
       <div>
         <div className="flex justify-between text-xs mb-1.5" style={{ color: 'var(--text-secondary)' }}>
           <span>Taxa de finalização</span>
-          <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{finalizados} / {total}</span>
+          <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{finalizados + auditoria} / {total}</span>
         </div>
         <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--input-bg)' }}>
           <motion.div
