@@ -89,7 +89,7 @@ function ColaboradorCard({ c, index }: { c: Colaborador; index: number }) {
       <div>
         <div className="flex justify-between text-xs text-slate-400 mb-1.5">
           <span>Taxa de finalização</span>
-          <span className="font-semibold text-white">{c.concluidos} / {c.registros}</span>
+          <span className="font-semibold text-white">{c.concluidos + c.auditoria} / {c.registros}</span>
         </div>
         <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
           <motion.div
